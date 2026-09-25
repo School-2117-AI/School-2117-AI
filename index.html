@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Школьный ИИ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🤖 Мой ИИ-Ассистент</h2>
+            <p>Школьный проект</p>
+        </div>
+        
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-message">Привет! Я готовая нейросеть Llama. Задай мне любой вопрос!</div>
+        </div>
+        
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        // Функция отправки запроса к бесплатному API
+        async function sendMessage() {
+            const inputElement = document.getElementById('userInput');
+            const messageText = inputElement.value.trim();
+            if (!messageText) return;
+
+            // Отображаем сообщение пользователя
+            appendMessage(messageText, 'user-message');
+            inputElement.value = '';
+
+            // Показываем индикатор загрузки
+            const loadingId = appendMessage('Думаю...', 'bot-message loading');
+
+            try {
+                // Используем бесплатный прокси-эндпоинт для работы с ИИ без ключей
+                const response = await fetch('https://allorigins.win' + encodeURIComponent('https://pollinations.ai' + encodeURIComponent(messageText)));
+                const data = await response.json();
+                
+                // Удаляем индикатор загрузки и выводим ответ ИИ
+                document.getElementById(loadingId).remove();
+                appendMessage(data.contents, 'bot-message');
+            } catch (error) {
+                document.getElementById(loadingId).textContent = 'Ошибка соединения с ИИ.';
+            }
+        }
+
+        function appendMessage(text, className) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now();
+            messageDiv.id = messageId;
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return messageId;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
