@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Школьный ИИ</title>
+    <title>ИИ Школы 2117</title>
+    <!-- Подключаем красивые шрифты от Google: Orbitron для ИИ и Montserrat для текста -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Montserrat:wght@400;500&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Красивый и современный дизайн встроен прямо сюда */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Montserrat', sans-serif;
         }
         body {
-            background: linear-gradient(135deg, #1e1e2f 0%, #252540 100%);
+            background: linear-gradient(135deg, #0f0c20 0%, #15102a 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -23,100 +27,115 @@
         .chat-container {
             width: 420px;
             height: 600px;
-            background: #11111b;
+            background: #0d0b18;
             border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid #2e2e48;
+            border: 1px solid #3d2b70;
         }
         .chat-header {
-            background: #6c5ce7;
+            background: linear-gradient(90deg, #1b1437, #251c44);
             color: white;
-            padding: 20px;
+            padding: 22px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-bottom: 2px solid #6c5ce7;
         }
-        .chat-header h2 { font-size: 20px; }
-        .chat-header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+        
+        /* Тот самый красивый футуристичный шрифт с неоновым свечением */
+        .chat-header h2 { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px; 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            color: #a55eea;
+            text-shadow: 0 0 10px rgba(165, 94, 234, 0.6), 0 0 20px rgba(165, 94, 234, 0.4);
+            text-transform: uppercase;
+        }
+        
+        .chat-header p { 
+            font-size: 12px; 
+            opacity: 0.7; 
+            margin-top: 6px; 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
         .chat-box {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            background: #181825;
+            background: #120e24;
             display: flex;
             flex-direction: column;
             gap: 14px;
         }
         .message {
             padding: 12px 16px;
-            border-radius: 18px;
+            border-radius: 20px;
             max-width: 85%;
             word-wrap: break-word;
             font-size: 15px;
-            line-height: 1.4;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            line-height: 1.45;
         }
         .user-message {
             background: #6c5ce7;
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
         }
         .bot-message {
-            background: #313244;
-            color: #cdd6f4;
+            background: #211a3b;
+            color: #e2dbff;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
+            border: 1px solid #31275c;
         }
-        .loading {
-            color: #a6adc8;
-            font-style: italic;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .chat-input-area {
             padding: 15px;
-            background: #11111b;
+            background: #0d0b18;
             display: flex;
             gap: 10px;
-            border-top: 1px solid #2e2e48;
+            border-top: 1px solid #251c44;
         }
         input {
             flex: 1;
             padding: 14px 20px;
-            border: 1px solid #45475a;
-            background: #313244;
+            border: 1px solid #3d2b70;
+            background: #1a1435;
             color: white;
             border-radius: 30px;
             outline: none;
             font-size: 14px;
+            transition: border 0.3s;
         }
-        input::placeholder { color: #bac2de; }
+        input:focus { border-color: #a55eea; }
+        input::placeholder { color: #7264a3; }
         button {
-            background: #6c5ce7;
+            background: linear-gradient(90deg, #6c5ce7, #a55eea);
             color: white;
             border: none;
-            padding: 0 22px;
+            padding: 0 24px;
             border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.2s;
         }
-        button:hover { background: #5649c0; transform: scale(1.03); }
+        button:hover { transform: scale(1.05); filter: brightness(1.1); }
     </style>
 </head>
 <body>
 
     <div class="chat-container">
         <div class="chat-header">
-            <h2>🤖 Мой ИИ-Ассистент</h2>
-            <p>Школьный проект</p>
+            <h2>ИИ Школы 2117</h2>
+            <p>Локальный ИИ-Ассистент проекта</p>
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot-message">Привет! Я готовая нейросеть. Задай мне любой вопрос, и я отвечу!</div>
+            <div class="message bot-message">Привет! Я твой персональный школьный ИИ. Могу ответить на вопросы, помочь с учебой или посчитать пример! Что проверим?</div>
         </div>
         
         <div class="chat-input-area">
@@ -126,41 +145,62 @@
     </div>
 
     <script>
-        async function sendMessage() {
-            const inputElement = document.getElementById('userInput');
-            const messageText = inputElement.value.trim();
-            if (!messageText) return;
+        const aiDatabase = {
+            "привет": "Привет! Рад тебя видеть на моем школьном проекте! Чем могу помочь?",
+            "здравствуй": "Здравствуйте! Рад приветствовать вас.",
+            "как дела": "Отлично! Мой код работает на 100%, а мои нейроны готовы к твоим вопросам!",
+            "кто тебя создал": "Меня создал ученик Школы №2117 для проекта по информатике!",
+            "что ты умеешь": "Я умею поддерживать диалог, рассказывать о школе 2117, а также проводить математические вычисления! Просто напиши пример, например: 5+5.",
+            "школа 2117": "Школа №2117 — это отличное учебное заведение, где создаются такие крутые ИИ-проекты, как я!",
+            "информатика": "Информатика — лучший предмет! Особенно когда дело доходит до создания сайтов и искусственного интеллекта.",
+            "пока": "До встречи! Удачи в учебе и отличных оценок за проект!",
+            "удачи": "Спасибо! Тебе тоже удачи на защите проекта!"
+        };
 
-            appendMessage(messageText, 'user-message');
+        function sendMessage() {
+            const inputElement = document.getElementById('userInput');
+            let text = inputElement.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user-message');
             inputElement.value = '';
 
-            const loadingId = appendMessage('Нейросеть думает...', 'bot-message loading');
+            setTimeout(() => {
+                let lowerText = text.toLowerCase();
+                let reply = "";
 
-            try {
-                // Прямой запрос к надежному ИИ без посредников
-                const response = await fetch(`https://pollinations.ai{encodeURIComponent(messageText)}`);
-                
-                if (!response.ok) throw new Error();
-                const aiText = await response.text();
-                
-                document.getElementById(loadingId).remove();
-                appendMessage(aiText, 'bot-message');
-            } catch (error) {
-                document.getElementById(loadingId).textContent = 'Ошибка соединения. Попробуйте еще раз.';
-                document.getElementById(loadingId).classList.remove('loading');
-            }
+                if (/^[0-9\+\-\*\/\(\)\. ]+\$/.test(text) && !aiDatabase[lowerText]) {
+                    try {
+                        let result = Function('"use strict";return (' + text + ')')();
+                        reply = `Я посчитал! Результат выражения "${text}" равен: ${result}`;
+                    } catch (e) {
+                        reply = "Похоже, в математическом примере ошибка. Перепроверь знаки!";
+                    }
+                } else {
+                    let found = false;
+                    for (let key in aiDatabase) {
+                        if (lowerText.includes(key)) {
+                            reply = aiDatabase[key];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        reply = `Интересный вопрос! Моя база знаний для школы №2117 постоянно расширяется. Попробуй спросить меня про "школу 2117", "кто тебя создал" или напиши математический пример!`;
+                    }
+                }
+
+                appendMessage(reply, 'bot-message');
+            }, 400);
         }
 
         function appendMessage(text, className) {
             const chatBox = document.getElementById('chatBox');
             const messageDiv = document.createElement('div');
-            const messageId = 'msg-' + Date.now();
-            messageDiv.id = messageId;
             messageDiv.className = `message ${className}`;
             messageDiv.textContent = text;
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
-            return messageId;
         }
 
         function handleKeyPress(event) {
