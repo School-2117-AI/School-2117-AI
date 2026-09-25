@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ИИ Школы 2117</title>
+    <!-- Подключаем библиотеку нейросетей Brain.js от Google -->
+    <script src="https://unpkg.com"></script>
+    
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Montserrat:wght@400;500&family=Orbitron:wght@700&display=swap" rel="stylesheet">
@@ -14,19 +17,14 @@
         .chat-container { width: 420px; height: 600px; background: #0d0b18; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #3d2b70; }
         .chat-header { background: linear-gradient(90deg, #1b1437, #251c44); color: white; padding: 22px; text-align: center; border-bottom: 2px solid #6c5ce7; }
         .chat-header h2 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 2px; color: #a55eea; text-shadow: 0 0 10px rgba(165, 94, 234, 0.6); text-transform: uppercase; }
-        .chat-header p { font-size: 12px; opacity: 0.7; margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-header p { font-size: 11px; opacity: 0.7; margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; color: #55efc4; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #120e24; display: flex; flex-direction: column; gap: 14px; }
         .message { padding: 12px 16px; border-radius: 20px; max-width: 85%; word-wrap: break-word; font-size: 15px; line-height: 1.45; }
         .user-message { background: #6c5ce7; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
         .bot-message { background: #211a3b; color: #e2dbff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #31275c; }
-        .loading { color: #a6adc8; font-style: italic; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .chat-input-area { padding: 15px; background: #0d0b18; display: flex; gap: 10px; border-top: 1px solid #251c44; }
-        input { flex: 1; padding: 14px 20px; border: 1px solid #3d2b70; background: #1a1435; color: white; border-radius: 30px; outline: none; font-size: 14px; transition: border 0.3s; }
-        input:focus { border-color: #a55eea; }
-        input::placeholder { color: #7264a3; }
-        button { background: linear-gradient(90deg, #6c5ce7, #a55eea); color: white; border: none; padding: 0 24px; border-radius: 30px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        button:hover { transform: scale(1.05); filter: brightness(1.1); }
+        input { flex: 1; padding: 14px 20px; border: 1px solid #3d2b70; background: #1a1435; color: white; border-radius: 30px; outline: none; font-size: 14px; }
+        button { background: linear-gradient(90deg, #6c5ce7, #a55eea); color: white; border: none; padding: 0 24px; border-radius: 30px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -34,21 +32,62 @@
     <div class="chat-container">
         <div class="chat-header">
             <h2>ИИ Школы 2117</h2>
-            <p>Нейросетевой Ассистент</p>
+            <p id="status">🧠 Обучение нейросети...</p>
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot-message">Привет! Подключение к умной нейросети выполнено. Регистрация не требуется. Спроси меня о чём угодно или отправь математический пример!</div>
+            <div class="message bot-message" id="welcomeMsg">Подождите, я тренирую свои электронные мозги...</div>
         </div>
         
         <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)" disabled>
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        async function sendMessage() {
+        // Инициализируем нейросеть классификации текстов
+        const net = new brain.recurrent.LSTM();
+        
+        // Датасет для обучения (Входные данные -> Ожидаемый класс ответа)
+        const trainingData = [
+            { input: 'привет', output: 'greeting' },
+            { input: 'здравствуй', output: 'greeting' },
+            { input: 'ку', output: 'greeting' },
+            { input: 'как дела', output: 'status' },
+            { input: 'как ты', output: 'status' },
+            { input: 'кто тебя создал', output: 'creator' },
+            { input: 'чей ты проект', output: 'creator' },
+            { input: 'школа 2117', output: 'school' },
+            { input: 'расскажи про школу', output: 'school' },
+            { input: 'пока', output: 'bye' },
+            { input: 'прощай', output: 'bye' }
+        ];
+
+        // Ответы, привязанные к классам нейросети
+        const responses = {
+            'greeting': 'Привет! Я твоя личная нейросеть Школы 2117. Я обучилась прямо в твоем браузере!',
+            'status': 'Мои виртуальные синапсы работают отлично! Готова отвечать на вопросы.',
+            'creator': 'Меня обучил и запрограммировал ученик школы №2117 для проекта по информатике!',
+            'school': 'Школа №2117 — это место, где создаются инновации. Например, я!',
+            'bye': 'До свидания! Возвращайся скорее, потренируем мои нейроны еще раз!'
+        };
+
+        // Запуск обучения при старте страницы
+        setTimeout(() => {
+            // Обучаем нейросеть (всего за несколько итераций для скорости)
+            net.train(trainingData, {
+                iterations: 60,
+                errorThresh: 0.01
+            });
+
+            // Включаем интерфейс после обучения
+            document.getElementById('status').textContent = '🟢 НЕЙРОСЕТЬ ОБУЧЕНА И АКТИВНА';
+            document.getElementById('welcomeMsg').textContent = 'Привет! Мое обучение завершено. Мой интеллект готов к работе! Спроси меня о чём-нибудь.';
+            document.getElementById('userInput').disabled = false;
+        }, 500);
+
+        function sendMessage() {
             const inputElement = document.getElementById('userInput');
             let text = inputElement.value.trim();
             if (!text) return;
@@ -56,43 +95,38 @@
             appendMessage(text, 'user-message');
             inputElement.value = '';
 
-            const loadingId = appendMessage('ИИ генерирует ответ...', 'bot-message loading');
-
-            try {
-                // Отправляем текстовый запрос напрямую к стабильному бесплатному ИИ
-                const response = await fetch(`https://pollinations.ai{encodeURIComponent(text)}`);
+            // Нейросеть делает предсказание (классификацию)
+            setTimeout(() => {
+                let cleanedText = text.toLowerCase();
                 
-                if (!response.ok) throw new Error();
-                const aiText = await response.text();
-                
-                document.getElementById(loadingId).remove();
-                appendMessage(aiText, 'bot-message');
-            } catch (error) {
-                // Если интернет сбоит, локально вычисляем математику как резервный вариант
-                document.getElementById(loadingId).remove();
+                // Проверяем математику
                 if (/^[0-9\+\-\*\/\(\)\. ]+\$/.test(text)) {
                     try {
                         let result = Function('"use strict";return (' + text + ')')();
-                        appendMessage(`Результат вычисления: ${result}`, 'bot-message');
-                    } catch (e) {
-                        appendMessage('Ошибка соединения с ИИ. Пожалуйста, отправьте сообщение еще раз.', 'bot-message');
-                    }
-                } else {
-                    appendMessage('Сервер ИИ временно перезагружается. Пожалуйста, повторите вашу фразу через пару секунд!', 'bot-message');
+                        appendMessage(`[Нейро-вычисление]: Результат равен ${result}`, 'bot-message');
+                        return;
+                    } catch (e) {}
                 }
-            }
+
+                // Нейросеть анализирует текст
+                let predictedClass = net.run(cleanedText);
+                let reply = responses[predictedClass.trim()];
+
+                if (!reply) {
+                    reply = 'Интересная фраза! Моя нейросеть пока не до конца уверена, как на это ответить. Попробуй спросить про "школу 2117", "как дела" или "кто тебя создал"!';
+                }
+
+                appendMessage(reply, 'bot-message');
+            }, 300);
         }
 
         function appendMessage(text, className) {
             const chatBox = document.getElementById('chatBox');
             const messageDiv = document.createElement('div');
-            const messageId = 'msg-' + Date.now();
-            messageDiv.id = messageId;
             messageDiv.className = `message ${className}`;
             messageDiv.textContent = text;
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
-            return messageId;
         }
 
         function handleKeyPress(event) {
