@@ -34,18 +34,18 @@
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot-message">Привет! Я твой самообучающийся ИИ. Напиши мне что-нибудь или обучи новому ответу!</div>
-            <div class="system-text">💡 Как обучить бота:<br><b>учи: вопрос = ответ</b></div>
+            <div class="message bot-message">Привет! Мой модуль обучения и математики полностью исправлен. Проверь меня!</div>
+            <div class="system-text">💡 Формат обучения:<br><b>учи: ваш вопрос = ваш ответ</b></div>
         </div>
         
         <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="Сообщение или 'учи: вопрос = ответ'..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="userInput" placeholder="Сообщение, пример или 'учи: вопрос = ответ'..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        // Стартовая встроенная память
+        // Базовая неизменяемая память ИИ
         const defaultDataset = [
             { keyword: 'привет', reply: 'Привет! Я самообучающийся ИИ Школы 2117. Чему мы сегодня научимся?' },
             { keyword: 'как дела', reply: 'Мои нейронные связи работают на 100%! Готов запоминать новые фразы.' },
@@ -54,10 +54,8 @@
             { keyword: 'пока', reply: 'До встречи! Обязательно возвращайся, чтобы обучить меня чему-то новому.' }
         ];
 
-        // Загружаем память из браузера
         let customMemory = JSON.parse(localStorage.getItem('ai_school_memory_fixed')) || [];
 
-        // Функция поиска совпадений Левенштейна (нечеткий поиск фраз)
         function getSimilarity(s1, s2) {
             let longer = s1.length < s2.length ? s2 : s1;
             let shorter = s1.length < s2.length ? s1 : s2;
@@ -91,7 +89,7 @@
             setTimeout(() => {
                 let userPhrase = text.toLowerCase();
 
-                // РЕЖИМ ОБУЧЕНИЯ БОТА
+                // 1. РЕЖИМ ОБУЧЕНИЯ
                 if (userPhrase.startsWith('учи:') && userPhrase.includes('=')) {
                     let content = text.substring(4).split('=');
                     if (content.length === 2) {
@@ -110,11 +108,27 @@
                     return;
                 }
 
-                // УМНЫЙ ИИ-ПОИСК ОТВЕТА
+                // 2. ИСПРАВЛЕННЫЙ РЕЖИМ МАТЕМАТИКИ (Проверяет наличие только цифр и знаков вычисления)
+                if (/^[0-9\+\-\*\/\(\)\. ]+\$/.test(text) && /[0-9]/.test(text)) {
+                    try {
+                        // Проверяем, не заканчивается ли пример на знак операции (защита от "2+")
+                        if (/[\+\-\*\/]\$/.test(text.trim())) {
+                            appendMessage('Пример не закончен! Допишите цифру после знака операции.', 'bot-message');
+                            return;
+                        }
+                        let result = Function('"use strict";return (' + text + ')')();
+                        appendMessage(`Результат вычисления выражения "${text}" равен: ${result}`, 'bot-message');
+                        return;
+                    } catch (e) {
+                        appendMessage('Ошибка в математическом выражении. Перепроверьте знаки!', 'bot-message');
+                        return;
+                    }
+                }
+
+                // 3. УМНЫЙ ИИ-ПОИСК ОТВЕТА
                 let bestReply = "";
                 let maxScore = 0;
 
-                // Проверяем то, чему нас научил пользователь
                 for (let item of customMemory) {
                     let score = 0;
                     if (userPhrase.includes(item.keyword)) score = 0.85;
@@ -123,7 +137,6 @@
                     if (score > maxScore) { maxScore = score; bestReply = item.reply; }
                 }
 
-                // Если не нашли, проверяем базовые фразы
                 if (maxScore < 0.5) {
                     for (let item of defaultDataset) {
                         let score = 0;
@@ -134,7 +147,6 @@
                     }
                 }
 
-                // Вывод результата на экран
                 if (maxScore > 0.4) {
                     appendMessage(bestReply, 'bot-message');
                 } else {
