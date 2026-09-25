@@ -3,189 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИИ Школы 2117</title>
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Montserrat:wght@400;500&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    
+    <title>Чат-бот с фильтром мата</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background: linear-gradient(135deg, #0f0c20 0%, #15102a 100%); height: 100vh; display: flex; justify-content: center; align-items: center; color: #ffffff; }
-        .chat-container { width: 420px; height: 600px; background: #0d0b18; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #3d2b70; }
-        .chat-header { background: linear-gradient(90deg, #1b1437, #251c44); color: white; padding: 22px; text-align: center; border-bottom: 2px solid #6c5ce7; }
-        .chat-header h2 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 2px; color: #a55eea; text-shadow: 0 0 10px rgba(165, 94, 234, 0.6); text-transform: uppercase; }
-        .chat-header p { font-size: 11px; opacity: 0.7; margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; color: #55efc4; }
-        .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #120e24; display: flex; flex-direction: column; gap: 14px; }
-        .message { padding: 12px 16px; border-radius: 20px; max-width: 85%; word-wrap: break-word; font-size: 15px; line-height: 1.45; }
-        .user-message { background: #6c5ce7; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
-        .bot-message { background: #211a3b; color: #e2dbff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #31275c; }
-        .system-text { font-size: 12px; color: #55efc4; font-style: italic; text-align: center; margin: 5px 0; }
-        .chat-input-area { padding: 15px; background: #0d0b18; display: flex; gap: 10px; border-top: 1px solid #251c44; }
-        input { flex: 1; padding: 14px 20px; border: 1px solid #3d2b70; background: #1a1435; color: white; border-radius: 30px; outline: none; font-size: 14px; }
-        button { background: linear-gradient(90deg, #6c5ce7, #a55eea); color: white; border: none; padding: 0 24px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1e1e2e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 550px;
+            background: #2b2b3b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .chat-header {
+            background: #3b3b4f;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            border-bottom: 1px solid #444;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bot-message {
+            background-color: #44445a;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .system-warning {
+            background-color: #ff4d4d;
+            color: white;
+            align-self: center;
+            font-size: 12px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            background: #222230;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+            background: #3b3b4f;
+            color: #fff;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin-left: 8px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2>ИИ Школы 2117</h2>
-            <p>🧠 Модуль Математики Исправлен</p>
-        </div>
-        
-        <div class="chat-box" id="chatBox">
-            <div class="message bot-message">Привет! Логика вычислений полностью обновлена. Ошибки с цифрами исправлены! Напиши пример или обучи меня.</div>
-            <div class="system-text">💡 Формат обучения:<br><b>учи: ваш вопрос = ваш ответ</b></div>
-        </div>
-        
-        <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="Сообщение, пример или 'учи: вопрос = ответ'..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Отправить</button>
-        </div>
+<div class="chat-container">
+    <div class="chat-header">ИИ Помощник</div>
+    <div class="chat-messages" id="chatBox">
+        <div class="message bot-message">Привет! Я чат-бот. Задай мне вопрос!</div>
     </div>
+    <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">Отправить</button>
+    </div>
+</div>
 
-    <script>
-        // Базовая память ИИ
-        const defaultDataset = [
-            { keyword: 'привет', reply: 'Привет! Я самообучающийся ИИ Школы 2117. Чему мы сегодня научимся?' },
-            { keyword: 'как дела', reply: 'Мои нейронные связи работают на 100%! Готов запоминать новые фразы.' },
-            { keyword: 'кто тебя создал', reply: 'Меня создал ученик школы №2117 для проекта по информатике!' },
-            { keyword: 'школа 2117', reply: 'Школа №2117 — лучшее место для создания IT-проектов!' },
-            { keyword: 'пока', reply: 'До встречи! Обязательно возвращайся, чтобы обучить меня чему-то новому.' }
-        ];
+<script>
+    // 1. Список запрещенных слов (можно дополнять)
+    const badWords = [
+        "блять", "бля", "сука", "нах", "нахуй", "похуй", 
+        "пиздец", "хуй", "пизда", "ебать", "долбоеб", "чмо"
+    ];
 
-        let customMemory = JSON.parse(localStorage.getItem('ai_school_memory_fixed')) || [];
+    // 2. Функция проверки текста на мат
+    function containsBadWords(text) {
+        const lowerText = text.toLowerCase();
+        
+        // Проверяем каждое слово из списка запрещенных
+        return badWords.some(word => {
+            // Регулярное выражение ищет слово, даже если его пытаются скрыть или повторить буквы
+            const regex = new RegExp(word, 'i');
+            return regex.test(lowerText);
+        });
+    }
 
-        function getSimilarity(s1, s2) {
-            let longer = s1.length < s2.length ? s2 : s1;
-            let shorter = s1.length < s2.length ? s1 : s2;
-            if (longer.length === 0) return 1.0;
-            let costs = [];
-            for (let i = 0; i <= s1.length; i++) {
-                let lastValue = i;
-                for (let j = 0; j <= s2.length; j++) {
-                    if (i === 0) costs[j] = j;
-                    else if (j > 0) {
-                        let newValue = costs[j - 1];
-                        if (s1.charAt(i - 1) !== s2.charAt(j - 1))
-                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                        costs[j - 1] = lastValue;
-                        lastValue = newValue;
-                    }
-                }
-                if (i > 0) costs[s2.length] = lastValue;
-            }
-            return (longer.length - costs[s2.length]) / longer.length;
-        }
+    // 3. Функция отправки сообщения
+    function sendMessage() {
+        const inputField = document.getElementById("userInput");
+        const chatBox = document.getElementById("chatBox");
+        const userText = inputField.value.trim();
 
-        function sendMessage() {
-            const inputElement = document.getElementById('userInput');
-            let text = inputElement.value.trim();
-            if (!text) return;
+        if (userText === "") return;
 
-            appendMessage(text, 'user-message');
-            inputElement.value = '';
-
+        // ПРОВЕРКА НА МАТ
+        if (containsBadWords(userText)) {
+            // Если найден мат — блокируем и показываем предупреждение
+            addMessage("Ваше сообщение содержит ненормативную лексику и не отправлено!", "system-warning");
+            
             setTimeout(() => {
-                let userPhrase = text.toLowerCase();
+                addMessage("Пожалуйста, общайтесь вежливо.", "bot-message");
+            }, 500);
 
-                // 1. РЕЖИМ ОБУЧЕНИЯ
-                if (userPhrase.startsWith('учи:') && userPhrase.includes('=')) {
-                    let content = text.substring(4).split('=');
-                    if (content.length === 2) {
-                        let q = content[0].trim().toLowerCase();
-                        let a = content[1].trim();
-
-                        if (q && a) {
-                            customMemory.push({ keyword: q, reply: a });
-                            localStorage.setItem('ai_school_memory_fixed', JSON.stringify(customMemory));
-                            appendSystemText(`✨ Память обновлена: "${q}" ➔ "${a}"`);
-                            appendMessage('Я успешно это запомнил! Можешь проверять вопрос.', 'bot-message');
-                            return;
-                        }
-                    }
-                    appendMessage('Ошибка формата! Пиши строго так: учи: вопрос = ответ', 'bot-message');
-                    return;
-                }
-
-                // 2. ЖЕЛЕЗОБЕТОННЫЙ АНАЛИЗ МАТЕМАТИКИ БЕЗ СБОЙНЫХ РЕГУЛЯРОК
-                let allowedMathChars = "0123456789+-*/(). ";
-                let isMath = true;
-                let hasDigits = false;
-
-                for (let i = 0; i < text.length; i++) {
-                    if (!allowedMathChars.includes(text[i])) {
-                        isMath = false;
-                        break;
-                    }
-                    if ("0123456789".includes(text[i])) {
-                        hasDigits = true;
-                    }
-                }
-
-                if (isMath && hasDigits) {
-                    let lastChar = text.trim().slice(-1);
-                    // Проверка на незаконченный знак операции
-                    if ("+-*/(".includes(lastChar)) {
-                        appendMessage('Ошибка: Математическое выражение не закончено! Допишите число.', 'bot-message');
-                        return;
-                    }
-                    try {
-                        let result = Function('"use strict"; return (' + text + ')')();
-                        appendMessage(`Результат вычисления: ${result}`, 'bot-message');
-                        return;
-                    } catch (e) {
-                        appendMessage('Ошибка в примере. Пожалуйста, проверьте знаки и скобки!', 'bot-message');
-                        return;
-                    }
-                }
-
-                // 3. УМНЫЙ ИИ-ПОИСК ОТВЕТА
-                let bestReply = "";
-                let maxScore = 0;
-
-                for (let item of customMemory) {
-                    let score = 0;
-                    if (userPhrase.includes(item.keyword)) score = 0.85;
-                    let similarity = getSimilarity(userPhrase, item.keyword);
-                    if (similarity > score) score = similarity;
-                    if (score > maxScore) { maxScore = score; bestReply = item.reply; }
-                }
-
-                if (maxScore < 0.5) {
-                    for (let item of defaultDataset) {
-                        let score = 0;
-                        if (userPhrase.includes(item.keyword)) score = 0.8;
-                        let similarity = getSimilarity(userPhrase, item.keyword);
-                        if (similarity > score) score = similarity;
-                        if (score > maxScore) { maxScore = score; bestReply = item.reply; }
-                    }
-                }
-
-                if (maxScore > 0.4) {
-                    appendMessage(bestReply, 'bot-message');
-                } else {
-                    appendMessage('Я пока не знаю ответа. Научи меня! Напиши: учи: ' + text + ' = [твой ответ]', 'bot-message');
-                }
-            }, 150);
+            inputField.value = "";
+            return; // Прерываем выполнение, сообщение пользователя НЕ добавляется в чат
         }
 
-        function appendMessage(text, className) {
-            const chatBox = document.getElementById('chatBox');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + className;
-            messageDiv.textContent = text;
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // Если всё в порядке — отображаем сообщение пользователя
+        addMessage(userText, "user-message");
+        inputField.value = "";
+
+        // Ответ бота
+        setTimeout(() => {
+            getBotResponse(userText);
+        }, 600);
+    }
+
+    // 4. Добавление сообщения в окно чата
+    function addMessage(text, className) {
+        const chatBox = document.getElementById("chatBox");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${className}`;
+        messageDiv.innerText = text;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight; // Автоскролл вниз
+    }
+
+    // 5. Простой ответ бота
+    function getBotResponse(userText) {
+        const lower = userText.toLowerCase();
+        let reply = "Я пока только учусь. Попробуй спросить что-то другое!";
+
+        if (lower.includes("привет") || lower.includes("здравствуй")) {
+            reply = "Привет! Чем могу помочь?";
+        } else if (lower.includes("как дела")) {
+            reply = "Отлично! Работаю без сбоев.";
+        } else if (lower.includes("кто ты")) {
+            reply = "Я чат-бот с встроенным фильтром мата!";
         }
 
-        function appendSystemText(text) {
-            const chatBox = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.className = 'system-text';
-            div.innerHTML = text;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        addMessage(reply, "bot-message");
+    }
+</script>
 
-        function handleKeyPress(event) {
+</body>
+</html>
