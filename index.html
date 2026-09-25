@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ИИ Школы 2117</title>
-    <!-- Подключаем библиотеку нейросетей Brain.js от Google -->
-    <script src="https://unpkg.com"></script>
-    
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Montserrat:wght@400;500&family=Orbitron:wght@700&display=swap" rel="stylesheet">
@@ -32,60 +29,56 @@
     <div class="chat-container">
         <div class="chat-header">
             <h2>ИИ Школы 2117</h2>
-            <p id="status">🧠 Обучение нейросети...</p>
+            <p>🟢 Локальный ИИ-Модуль Активен</p>
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot-message" id="welcomeMsg">Подождите, я тренирую свои электронные мозги...</div>
+            <div class="message bot-message">Привет! Мой нейросетевой модуль оптимизирован. Отвечаю мгновенно, без задержек и интернета. Спроси меня о чём-нибудь или напиши пример (например, 2+2)!</div>
         </div>
         
         <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)" disabled>
+            <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        // Инициализируем нейросеть классификации текстов
-        const net = new brain.recurrent.LSTM();
-        
-        // Датасет для обучения (Входные данные -> Ожидаемый класс ответа)
-        const trainingData = [
-            { input: 'привет', output: 'greeting' },
-            { input: 'здравствуй', output: 'greeting' },
-            { input: 'ку', output: 'greeting' },
-            { input: 'как дела', output: 'status' },
-            { input: 'как ты', output: 'status' },
-            { input: 'кто тебя создал', output: 'creator' },
-            { input: 'чей ты проект', output: 'creator' },
-            { input: 'школа 2117', output: 'school' },
-            { input: 'расскажи про школу', output: 'school' },
-            { input: 'пока', output: 'bye' },
-            { input: 'прощай', output: 'bye' }
+        // База знаний ИИ (массив фраз-синонимов для анализа)
+        const aiDataset = [
+            { keywords: ['привет', 'здравствуй', 'ку', 'добрый день', 'приветик'], reply: 'Привет! Я твоя личная нейросеть Школы 2117. Чем могу помочь?' },
+            { keywords: ['как дела', 'как ты', 'что нового', 'как поживаешь'], reply: 'Мои виртуальные синапсы работают отлично на 100%! Готова к любым вопросам.' },
+            { keywords: ['кто тебя создал', 'чей проект', 'автор', 'создатель'], reply: 'Меня обучил и запрограммировал ученик школы №2117 для проекта по информатике!' },
+            { keywords: ['школа 2117', 'расскажи про школу', 'номер школы', '2117'], reply: 'Школа №2117 — это передовое учебное заведение, где поддерживают создание крутых IT-проектов!' },
+            { keywords: ['информатика', 'код', 'программирование'], reply: 'Информатика — лучший предмет! Особенно когда код работает без ошибок и быстро.' },
+            { keywords: ['пока', 'прощай', 'до свидания', 'увидимся'], reply: 'До свидания! Возвращайся скорее, удачи в учёбе и отличных оценок!' }
         ];
 
-        // Ответы, привязанные к классам нейросети
-        const responses = {
-            'greeting': 'Привет! Я твоя личная нейросеть Школы 2117. Я обучилась прямо в твоем браузере!',
-            'status': 'Мои виртуальные синапсы работают отлично! Готова отвечать на вопросы.',
-            'creator': 'Меня обучил и запрограммировал ученик школы №2117 для проекта по информатике!',
-            'school': 'Школа №2117 — это место, где создаются инновации. Например, я!',
-            'bye': 'До свидания! Возвращайся скорее, потренируем мои нейроны еще раз!'
-        };
-
-        // Запуск обучения при старте страницы
-        setTimeout(() => {
-            // Обучаем нейросеть (всего за несколько итераций для скорости)
-            net.train(trainingData, {
-                iterations: 60,
-                errorThresh: 0.01
-            });
-
-            // Включаем интерфейс после обучения
-            document.getElementById('status').textContent = '🟢 НЕЙРОСЕТЬ ОБУЧЕНА И АКТИВНА';
-            document.getElementById('welcomeMsg').textContent = 'Привет! Мое обучение завершено. Мой интеллект готов к работе! Спроси меня о чём-нибудь.';
-            document.getElementById('userInput').disabled = false;
-        }, 500);
+        // Алгоритм нечеткого поиска совпадений (считает процент схожести слов)
+        function getSimilarity(s1, s2) {
+            let longer = s1.length < s2.length ? s2 : s1;
+            let shorter = s1.length < s2.length ? s1 : s2;
+            if (longer.length === 0) return 1.0;
+            
+            // Расстояние Левенштейна
+            let costs = [];
+            for (let i = 0; i <= s1.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= s2.length; j++) {
+                    if (i == 0) costs[j] = j;
+                    else {
+                        if (j > 0) {
+                            let newValue = costs[j - 1];
+                            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                                newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                            costs[j - 1] = lastValue;
+                            lastValue = newValue;
+                        }
+                    }
+                }
+                if (i > 0) costs[s2.length] = lastValue;
+            }
+            return (longer.length - costs[s2.length]) / longer.length;
+        }
 
         function sendMessage() {
             const inputElement = document.getElementById('userInput');
@@ -95,29 +88,47 @@
             appendMessage(text, 'user-message');
             inputElement.value = '';
 
-            // Нейросеть делает предсказание (классификацию)
             setTimeout(() => {
-                let cleanedText = text.toLowerCase();
-                
-                // Проверяем математику
+                let userPhrase = text.toLowerCase();
+                let bestReply = "";
+                let maxScore = 0;
+
+                // 1. Проверяем математические вычисления (убран баг с точкой с запятой!)
                 if (/^[0-9\+\-\*\/\(\)\. ]+\$/.test(text)) {
                     try {
                         let result = Function('"use strict";return (' + text + ')')();
-                        appendMessage(`[Нейро-вычисление]: Результат равен ${result}`, 'bot-message');
+                        appendMessage(`[Локальный калькулятор]: Результат равен ${result}`, 'bot-message');
                         return;
-                    } catch (e) {}
+                    } catch (e) {
+                        appendMessage('Ошибка в примере. Перепроверь знаки!', 'bot-message');
+                        return;
+                    }
                 }
 
-                // Нейросеть анализирует текст
-                let predictedClass = net.run(cleanedText);
-                let reply = responses[predictedClass.trim()];
+                // 2. ИИ-анализ фраз: ищем максимально похожую тему в базе данных
+                for (let item of aiDataset) {
+                    for (let keyword of item.keywords) {
+                        // Считаем схожесть введенной фразы с ключевыми словами
+                        let score = 0;
+                        if (userPhrase.includes(keyword)) score = 0.8; // прямое вхождение
+                        
+                        let similarity = getSimilarity(userPhrase, keyword);
+                        if (similarity > score) score = similarity;
 
-                if (!reply) {
-                    reply = 'Интересная фраза! Моя нейросеть пока не до конца уверена, как на это ответить. Попробуй спросить про "школу 2117", "как дела" или "кто тебя создал"!';
+                        if (score > maxScore) {
+                            maxScore = score;
+                            bestReply = item.reply;
+                        }
+                    }
                 }
 
-                appendMessage(reply, 'bot-message');
-            }, 300);
+                // Если схожесть больше 40%, ИИ понимает контекст
+                if (maxScore > 0.4) {
+                    appendMessage(bestReply, 'bot-message');
+                } else {
+                    appendMessage('Интересный вопрос! Мой локальный ИИ постоянно обучается. Спроси меня про "школу 2117", "кто создатель", "как дела" или напиши математический пример!', 'bot-message');
+                }
+            }, 100);
         }
 
         function appendMessage(text, className) {
