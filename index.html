@@ -17,12 +17,16 @@
         .chat-header p { font-size: 12px; opacity: 0.7; margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #120e24; display: flex; flex-direction: column; gap: 14px; }
         .message { padding: 12px 16px; border-radius: 20px; max-width: 85%; word-wrap: break-word; font-size: 15px; line-height: 1.45; }
-        .user-message { background: #6c5ce7; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .user-message { background: #6c5ce7; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
         .bot-message { background: #211a3b; color: #e2dbff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #31275c; }
-        .loading { color: #a6adc8; font-style: italic; }
+        .loading { color: #a6adc8; font-style: italic; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .chat-input-area { padding: 15px; background: #0d0b18; display: flex; gap: 10px; border-top: 1px solid #251c44; }
-        input { flex: 1; padding: 14px 20px; border: 1px solid #3d2b70; background: #1a1435; color: white; border-radius: 30px; outline: none; font-size: 14px; }
-        button { background: linear-gradient(90deg, #6c5ce7, #a55eea); color: white; border: none; padding: 0 24px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        input { flex: 1; padding: 14px 20px; border: 1px solid #3d2b70; background: #1a1435; color: white; border-radius: 30px; outline: none; font-size: 14px; transition: border 0.3s; }
+        input:focus { border-color: #a55eea; }
+        input::placeholder { color: #7264a3; }
+        button { background: linear-gradient(90deg, #6c5ce7, #a55eea); color: white; border: none; padding: 0 24px; border-radius: 30px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        button:hover { transform: scale(1.05); filter: brightness(1.1); }
     </style>
 </head>
 <body>
@@ -34,7 +38,7 @@
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot-message">Привет! Подключение к нейросети установлено. Спроси меня о чём угодно!</div>
+            <div class="message bot-message">Привет! Подключение к умной нейросети выполнено. Регистрация не требуется. Спроси меня о чём угодно или отправь математический пример!</div>
         </div>
         
         <div class="chat-input-area">
@@ -55,34 +59,26 @@
             const loadingId = appendMessage('ИИ генерирует ответ...', 'bot-message loading');
 
             try {
-                // Прямой вызов текстовой нейросети без блокировок CORS
-                const response = await fetch("https://adventblocks.cc", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer free-tier" // открытый публичный доступ
-                    },
-                    body: JSON.stringify({
-                        model: "llama-3-8b",
-                        messages: [
-                            { role: "system", content: "Ты умный ИИ-помощник для учеников Школы №2117. Отвечай кратко, понятно и на русском языке." },
-                            { role: "user", content: text }
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                document.getElementById(loadingId).remove();
+                // Отправляем текстовый запрос напрямую к стабильному бесплатному ИИ
+                const response = await fetch(`https://pollinations.ai{encodeURIComponent(text)}`);
                 
-                let aiReply = data.choices[0].message.content;
-                appendMessage(aiReply, 'bot-message');
-            } catch (error) {
-                // Если внешний сервер перегружен, включается запасной локальный режим
+                if (!response.ok) throw new Error();
+                const aiText = await response.text();
+                
                 document.getElementById(loadingId).remove();
-                if(text.includes('2+2')) {
-                    appendMessage('Я посчитал локально! Результат: 4', 'bot-message');
+                appendMessage(aiText, 'bot-message');
+            } catch (error) {
+                // Если интернет сбоит, локально вычисляем математику как резервный вариант
+                document.getElementById(loadingId).remove();
+                if (/^[0-9\+\-\*\/\(\)\. ]+\$/.test(text)) {
+                    try {
+                        let result = Function('"use strict";return (' + text + ')')();
+                        appendMessage(`Результат вычисления: ${result}`, 'bot-message');
+                    } catch (e) {
+                        appendMessage('Ошибка соединения с ИИ. Пожалуйста, отправьте сообщение еще раз.', 'bot-message');
+                    }
                 } else {
-                    appendMessage('Сервер ИИ временно занят. Попробуйте отправить сообщение ещё раз через пару секунд!', 'bot-message');
+                    appendMessage('Сервер ИИ временно перезагружается. Пожалуйста, повторите вашу фразу через пару секунд!', 'bot-message');
                 }
             }
         }
