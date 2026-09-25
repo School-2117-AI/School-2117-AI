@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат-бот с фильтром мата</title>
+    <title>Чат-бот с обучением и фильтром мата</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,8 +22,8 @@
         }
 
         .chat-container {
-            width: 400px;
-            height: 550px;
+            width: 420px;
+            height: 580px;
             background: #2b2b3b;
             border-radius: 12px;
             display: flex;
@@ -80,6 +80,16 @@
             border-radius: 6px;
         }
 
+        .system-info {
+            background-color: #ff9800;
+            color: #000;
+            font-weight: bold;
+            align-self: center;
+            font-size: 12px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
         .chat-input-area {
             display: flex;
             padding: 10px;
@@ -126,46 +136,88 @@
 </div>
 
 <script>
-    // 1. Список запрещенных слов (можно дополнять)
+    // 1. Список запрещенных слов
     const badWords = [
         "блять", "бля", "сука", "нах", "нахуй", "похуй", 
         "пиздец", "хуй", "пизда", "ебать", "долбоеб", "чмо"
     ];
 
-    // 2. Функция проверки текста на мат
-    function containsBadWords(text) {
+    // Состояния режима обучения: 0 - обычный чат, 1 - ждем вопрос, 2 - ждем ответ
+    let teachState = 0; 
+    let tempQuestion = "";
+
+    // Загрузка сохраненных знаний из браузера (localStorage)
+    let customKnowledge = JSON.parse(localStorage.getItem("botKnowledge")) || {};
+
+    // Проверка на мат
+    function containsBadWords(text)
+
+
+{
         const lowerText = text.toLowerCase();
-        
-        // Проверяем каждое слово из списка запрещенных
-        return badWords.some(word => {
-            // Регулярное выражение ищет слово, даже если его пытаются скрыть или повторить буквы
-            const regex = new RegExp(word, 'i');
-            return regex.test(lowerText);
-        });
+        return badWords.some(word => new RegExp(word, 'i').test(lowerText));
     }
 
-    // 3. Функция отправки сообщения
+    // Основная функция отправки
     function sendMessage() {
         const inputField = document.getElementById("userInput");
-        const chatBox = document.getElementById("chatBox");
         const userText = inputField.value.trim();
 
         if (userText === "") return;
 
-        // ПРОВЕРКА НА МАТ
-        if (containsBadWords(userText)) {
-            // Если найден мат — блокируем и показываем предупреждение
-            addMessage("Ваше сообщение содержит ненормативную лексику и не отправлено!", "system-warning");
+        // Команда активации обучения
+        if (userText.toLowerCase() === "чк гавно") {
+            addMessage(userText, "user-message");
+            inputField.value = "";
+            teachState = 1;
+            addMessage("🔧 Режим обучения активирован!", "system-info");
+            setTimeout(() => {
+                addMessage("Напиши фразу или вопрос, которому хочешь меня научить:", "bot-message");
+            }, 400);
+            return;
+        }
+
+        // Логика режима обучения
+        if (teachState === 1) {
+            // Этап 1: Получили фразу/вопрос
+            addMessage(userText, "user-message");
+            inputField.value = "";
+            tempQuestion = userText.toLowerCase();
+            teachState = 2;
+            setTimeout(() => {
+                addMessage(`Отлично! Теперь напиши, что я должен отвечать на фразу: "${userText}"`, "bot-message");
+            }, 400);
+            return;
+        } 
+        else if (teachState === 2) {
+            // Этап 2: Получили ответ на вопрос
+            addMessage(userText, "user-message");
+            inputField.value = "";
             
+            // Сохраняем в память
+            customKnowledge[tempQuestion] = userText;
+            localStorage.setItem("botKnowledge", JSON.stringify(customKnowledge));
+            
+            teachState = 0; // Возвращаемся в обычный режим
+            tempQuestion = "";
+
+            setTimeout(() => {
+                addMessage("✅ Готово! Я запомнил этот ответ. Теперь можешь общаться дальше.", "system-info");
+            }, 400);
+            return;
+        }
+
+        // ПРОВЕРКА НА МАТ (в обычном режиме)
+        if (containsBadWords(userText)) {
+            addMessage("Ваше сообщение содержит ненормативную лексику и не отправлено!", "system-warning");
             setTimeout(() => {
                 addMessage("Пожалуйста, общайтесь вежливо.", "bot-message");
             }, 500);
-
             inputField.value = "";
-            return; // Прерываем выполнение, сообщение пользователя НЕ добавляется в чат
+            return;
         }
 
-        // Если всё в порядке — отображаем сообщение пользователя
+        // Обычная отправка сообщения
         addMessage(userText, "user-message");
         inputField.value = "";
 
@@ -175,30 +227,49 @@
         }, 600);
     }
 
-    // 4. Добавление сообщения в окно чата
+    // Вывод сообщения в чат
     function addMessage(text, className) {
         const chatBox = document.getElementById("chatBox");
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${className}`;
         messageDiv.innerText = text;
         chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight; // Автоскролл вниз
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // 5. Простой ответ бота
+    // Логика ответов
     function getBotResponse(userText) {
         const lower = userText.toLowerCase();
-        let reply = "Я пока только учусь. Попробуй спросить что-то другое!";
+
+        // 1. Проверяем, есть ли выученный ответ
+        if (customKnowledge[lower]) {
+            addMessage(customKnowledge[lower], "bot-message");
+            return;
+        }
+
+        // Ищем частичные совпадения в выученных фразах
+        for (let key in customKnowledge) {
+            if (lower.includes(key)) {
+                addMessage(customKnowledge[key], "bot-message");
+                return;
+            }
+        }
+
+        // 2. Стандартные заготовленные ответы
+        let reply = "Я пока не знаю, что ответить. Ты можешь научить меня с помощью команды 'чк гавно'!";
 
         if (lower.includes("привет") || lower.includes("здравствуй")) {
             reply = "Привет! Чем могу помочь?";
         } else if (lower.includes("как дела")) {
-            reply = "Отлично! Работаю без сбоев.";
+            reply = "Отлично! Учусь новым фразам.";
         } else if (lower.includes("кто ты")) {
-            reply = "Я чат-бот с встроенным фильтром мата!";
+            reply = "Я чат-бот, которого ты можешь обучать самостоятельно!";
         }
 
-        addMessage(reply, "bot-message");
+        addMes
+
+
+sage(reply, "bot-message");
     }
 </script>
 
