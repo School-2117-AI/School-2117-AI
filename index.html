@@ -1,5 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат-бот</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1e1e2e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 420px;
+            height: 580px;
+            background: #2b2b3b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .chat-header {
+            background: #3b3b4f;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            border-bottom: 1px solid #444;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bot-message {
+            background-color: #44445a;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .system-warning {
+            background-color: #ff4d4d;
+            color: white;
+            align-self: center;
+            font-size: 12px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .system-info {
+            background-color: #ff9800;
+            color: #000;
+            font-weight: bold;
+            align-self: center;
+            font-size: 12px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            background: #222230;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+            background: #3b3b4f;
+            color: #fff;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin-left: 8px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">ИИ Помощник</div>
+    <div class="chat-messages" id="chatBox">
+        <div class="message bot-message">Привет! Я чат-бот. Задай мне вопрос или напиши пример!</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">Отправить</button>
+    </div>
+</div>
+
 <script>
-    // 1. Список запрещенных слов
     const badWords = [
         "блять", "бля", "сука", "нах", "нахуй", "похуй", 
         "пиздец", "хуй", "пизда", "ебать", "долбоеб", "чмо"
@@ -9,40 +145,37 @@
     let tempQuestion = "";
     let customKnowledge = JSON.parse(localStorage.getItem("botKnowledge")) || {};
 
-    // Проверка на мат
     function containsBadWords(text) {
         const lowerText = text.toLowerCase();
         return badWords.some(word => new RegExp(word, 'i').test(lowerText));
     }
 
-    // Безопасный калькулятор для математических выражений
     function calculateMath(text) {
-        // Убираем пробелы и проверяем, состоит ли текст ТОЛЬКО из цифр и математических знаков (+, -, *, /, (, ), .)
-        const cleanText = text.replace(/\s+/g, '');
+        const cleanText = text.replace(/\s+/g
+
+
+, '');
         const isMathPattern = /^[\d\+\-\*\/\(\)\.]+$/;
 
         if (isMathPattern.test(cleanText)) {
             try {
-                // Вычисляем результат при помощи Function (безопаснее eval)
                 const result = new Function(`return ${cleanText}`)();
                 if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
                     return result;
                 }
             } catch (e) {
-                return null; // Если запись математически некорректна (например "2++2")
+                return null;
             }
         }
         return null;
     }
 
-    // Основная функция отправки
     function sendMessage() {
         const inputField = document.getElementById("userInput");
         const userText = inputField.value.trim();
 
         if (userText === "") return;
 
-        // Команда активации обучения
         if (userText.toLowerCase() === "чк гавно") {
             addMessage(userText, "user-message");
             inputField.value = "";
@@ -54,7 +187,6 @@
             return;
         }
 
-        // Логика режима обучения
         if (teachState === 1) {
             addMessage(userText, "user-message");
             inputField.value = "";
@@ -76,12 +208,11 @@
             tempQuestion = "";
 
             setTimeout(() => {
-                addMessage("✅ Готово! Я запомнил этот ответ. Теперь можешь общаться дальше.", "system-info");
+                addMessage("✅ Готово! Я запомнил этот ответ.", "system-info");
             }, 400);
             return;
         }
 
-        // ПРОВЕРКА НА МАТ
         if (containsBadWords(userText)) {
             addMessage("Ваше сообщение содержит ненормативную лексику и не отправлено!", "system-warning");
             setTimeout(() => {
@@ -91,7 +222,6 @@
             return;
         }
 
-        // Обычная отправка
         addMessage(userText, "user-message");
         inputField.value = "";
 
@@ -109,21 +239,15 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Логика ответов
     function getBotResponse(userText) {
-        const lower =
+        const lower = userText.toLowerCase();
 
-
-userText.toLowerCase();
-
-        // 1. Проверяем, не пример ли это (2+2+2, 10*5, 100/4 и т.д.)
         const mathResult = calculateMath(userText);
         if (mathResult !== null) {
             addMessage(`Результат: ${mathResult}`, "bot-message");
             return;
         }
 
-        // 2. Проверяем выученные ответы
         if (customKnowledge[lower]) {
             addMessage(customKnowledge[lower], "bot-message");
             return;
@@ -136,7 +260,6 @@ userText.toLowerCase();
             }
         }
 
-        // 3. Стандартные ответы
         let reply = "Я пока не знаю, что ответить. Ты можешь научить меня с помощью команды 'чк гавно'!";
 
         if (lower.includes("привет") || lower.includes("здравствуй")) {
@@ -150,3 +273,8 @@ userText.toLowerCase();
         addMessage(reply, "bot-message");
     }
 </script>
+
+</body>
+</html>
+
+
